@@ -70,18 +70,19 @@ export default {
         })
     },
     handleDownloadWithWindowOpen() {
-      // 127.0.0.1就等于localhost 就是电脑本地开发环境服务器
       window.open(`http://127.0.0.1:3000/download/${this.fileId}`)
     },
     handleDownloadWithAxios() {
       axios
         .get(`/api/download/${this.fileId}`)
         .then(res => {
-          const url = window.URL.createObjectURL(new Blob([res.data]))
+          // 后端需要返回content-type
+          // const type = res.headers['content-type']
+          // const blob = new Blob([res.data], { type })
+          const blob = new Blob([res.data])
           const link = document.createElement('a')
-          link.href = url
-          link.setAttribute('download', this.fileId)
-          document.body.appendChild(link)
+          link.href = URL.createObjectURL(blob);
+          link.download = 'text'
           link.click()
         })
     },
