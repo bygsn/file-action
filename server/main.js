@@ -63,28 +63,35 @@ app.get('/download/:uuid', (req, res) => {
       // 设置下载接口响应头的content-type属性的值
       // 每一种文件类型 都有对应的content-type
       const fileType = firstMatchingFile.split('.').pop().toLowerCase()
-      console.log('fileType => ', fileType.length)
-      if(fileType === 'pdf') {
-        res.type('application/pdf')
-      } else if(fileType === 'doc') {
-        res.type('application/msword')
-      } else if(fileType === 'docx') {
-        res.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-      } else if(fileType === 'xls') {
-        res.type('application/vnd.ms-excel')
-      } else if(fileType === 'xlsx') {
-        res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-      }
+      console.log('fileType => ', fileType)
+      // if(fileType === 'pdf') {
+      //   res.type('application/pdf')
+      // } else if(fileType === 'doc') {
+      //   res.type('application/msword')
+      // } else if(fileType === 'docx') {
+      //   res.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+      // } else if(fileType === 'xls') {
+      //   res.type('application/vnd.ms-excel')
+      // } else if(fileType === 'xlsx') {
+      //   res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      // }
 
       // 构建文件的完整路径
       const filePath = `${FILE_UPLOAD_DIR}/${firstMatchingFile}`;
 
       // 使用 res.download 或 res.sendFile 返回文件
-      res.download(filePath, firstMatchingFile.split('---').pop(), (err) => {
+      res.download(filePath, firstMatchingFile.split('---').pop(), {
+        headers: {
+          'Content-Type': 'application/pdf'
+        }
+      }, (err) => {
         if (err) {
           res.status(500).send('文件下载出错');
         }
       });
+
+      // 返回文件流
+      
     })
     .catch((error) => {
       res.status(500).send('无法读取目录');

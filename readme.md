@@ -1,7 +1,6 @@
 一 功能
 
-文件上传下载 包括前后端 
-前端vue2 后端nodejs
+文件上传下载 包括前后端 前端vue2 后端nodejs
 
 二 运行
 
@@ -13,6 +12,7 @@ pnpm i => pnpm安装依赖
 
 npm i -g pnpm => 如果pnpm i报错 没有安装pnpm 需要先用npm安装
 
+
 2) 启动项目
 
 在idea或者vscode中开两个终端 一个终端中运行一个项目 同时启动前端项目和后端项目
@@ -20,6 +20,21 @@ npm i -g pnpm => 如果pnpm i报错 没有安装pnpm 需要先用npm安装
 pnpm run dev 启动前端项目
 
 pnpm run dev:server 启动后端项目
+
+如果启动失败 可能是版本不对
+
+当前版本:
+nodejs: 14.18.2
+npm: 6.14.15
+pnpm 6.30.1
+"axios": "^1.6.0",
+"core-js": "^3.6.5",
+"element-ui": "^2.15.14",
+"express": "^4.18.2",
+"fs-extra": "^11.1.1",
+"multer": "^1.4.5-lts.1",
+"uuid": "^9.0.1",
+"vue": "^2.6.11"
 
 3) 查看项目效果
 
