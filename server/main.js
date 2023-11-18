@@ -167,10 +167,8 @@ app.get('/html/files', (req, res) => {
   });
 });
 
-
-
-
-app.listen(3000, () => {
-  console.log('http://localhost:3000/')
+// 后端端口
+app.listen(3001, () => {
+  console.log('http://localhost:3001/')
   console.log('启动后端项目成功')
 })

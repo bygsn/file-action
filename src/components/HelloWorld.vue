@@ -2,7 +2,7 @@
   <div class="hello">
     <div class="card">
       文件相关操作:
-      <span style="color: green">文件上传 下载 </span>
+      <span style="color: green">文件上传 下载/get请求 下载/post请求 </span>
       <span> 5分钟下载链接过期 导出 导入 大文件上传 大文件下载 多文件同时下载</span>
 <!-- todo  5分钟下载链接过期-->
     </div>
@@ -23,7 +23,12 @@
         <span style="margin-right: 10px">
           <span style="color: #ace" @click="handleClickUuid(file)">{{ file.id }}</span>
           -
-          <a :href="'http://127.0.0.1:3000' + file.url">
+          <!--
+            不能直接这样写 把后端url加到前面 http://127.0.0.1:3000
+            必须在vue.config里面配代理
+          -->
+<!--          <a :href="'http://127.0.0.1:3000' + file.url">-->
+          <a :href="file.url">
             <span>{{ file.name }}</span>
           </a>
         </span>
@@ -34,7 +39,8 @@
       <input v-model="fileId" type="text" placeholder="填入文件 uuid" class="card-input">
       <button @click="handleDownloadWithWindowOpen">window.open 下载</button>
       <button @click="handleDownloadWithAxiosCommon">axios 下载 - 通用</button>
-      <button @click="handleDownloadWithAxios">axios 下载 - 简易</button>
+      <button @click="handleDownloadWithAxiosGet">axios下载+get请求 - 简易</button>
+      <button @click="handleDownloadWithAxiosPost">axios下载+post请求 - 简易</button>
     </div>
   </div>
 </template>
@@ -89,7 +95,8 @@ export default {
         })
     },
     handleDownloadWithWindowOpen() {
-      window.open(`http://127.0.0.1:3000/download/${this.fileId}`)
+      window.open(`http://${location.host}/download/${this.fileId}`)
+      // window.open(`http://127.0.0.1:3000/download/${this.fileId}`)
     },
     handleDownloadWithAxiosCommon() {
       downloadFile(
@@ -120,7 +127,8 @@ export default {
         }
       )
     },
-    handleDownloadWithAxios() {
+    handleDownloadWithAxiosGet() {
+      // 注意 get请求 只有2个参数 axios.get(url[, config])
       axios
         .get(`/api/download/${this.fileId}`,
           {
@@ -136,7 +144,37 @@ export default {
           URL.revokeObjectURL(link.href)
         })
     },
-    handleDownloadWithAxiosNote() {
+    handleDownloadWithAxiosPost() {
+      // 注意 post请求 有3个参数 第3个才是config axios.post(url[, data[, config]])
+      axios
+        .post(`/api/download/${this.fileId}`,
+          {},
+          {
+            responseType: 'blob',
+          }
+        )
+        .then(res => {
+          const blob = new Blob([res.data])
+          const link = document.createElement('a')
+          link.href = URL.createObjectURL(blob);
+          link.download = this.file.name
+          link.click()
+          URL.revokeObjectURL(link.href)
+          // 或者是这种写法 更完整
+          // const blob = new Blob([res.data], {
+          //   type: "application/octet-stream"
+          // })
+          // const link = document.createElement('a')
+          // linl.target = '_blank'
+          // link.href = URL.createObjectURL(blob);
+          // link.download = this.file.name
+          // document.body.appendChild(link)
+          // link.click()
+          // URL.revokeObjectURL(link.href)
+          // document.body.removeChild(link)
+        })
+    },
+    handleDownloadWithAxiosGetNote() {
       /**
        通过接口的形式获取文件流并生成下载文件 使用blob下载思路：
        1）使用ajax发起请求，指定接收类型为blob（responseType: ‘blob’）
