@@ -41,7 +41,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.status(200).send(`文件上传成功！fileId: ${fileId}`)
 })
 
-// 文件下载 设置路由处理
+// 文件下载 设置路由处理 get调用方式
 app.get('/download/:uuid', (req, res) => {
   const uuid = req.params.uuid;
   if (!uuid) {
@@ -92,6 +92,63 @@ app.get('/download/:uuid', (req, res) => {
 
       // 返回文件流
       
+    })
+    .catch((error) => {
+      res.status(500).send('无法读取目录');
+    });
+});
+
+// 文件下载 设置路由处理 post调用方式
+app.post('/download/post/:uuid', (req, res) => {
+  const uuid = req.params.uuid;
+  if (!uuid) {
+    return res.status(404).send('UUID 未提供！');
+  }
+
+  fse.readdir(FILE_UPLOAD_DIR)
+    .then((files) => {
+      // 过滤以指定 UUID 开头的文件
+      const matchingFiles = files.filter((file) => file.startsWith(uuid));
+      console.log('matchingFiles => ', matchingFiles)
+      if (matchingFiles.length === 0) {
+        return res.status(404).send('未找到匹配文件');
+      }
+
+      // 如果有多个匹配文件，选择第一个
+      const firstMatchingFile = matchingFiles[0];
+
+      // 设置下载接口响应头的content-type属性的值
+      // 每一种文件类型 都有对应的content-type
+      const fileType = firstMatchingFile.split('.').pop().toLowerCase()
+      console.log('fileType => ', fileType)
+      // if(fileType === 'pdf') {
+      //   res.type('application/pdf')
+      // } else if(fileType === 'doc') {
+      //   res.type('application/msword')
+      // } else if(fileType === 'docx') {
+      //   res.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+      // } else if(fileType === 'xls') {
+      //   res.type('application/vnd.ms-excel')
+      // } else if(fileType === 'xlsx') {
+      //   res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      // }
+
+      // 构建文件的完整路径
+      const filePath = `${FILE_UPLOAD_DIR}/${firstMatchingFile}`;
+
+      // 使用 res.download 或 res.sendFile 返回文件
+      res.download(filePath, firstMatchingFile.split('---').pop(), {
+        headers: {
+          'Content-Type': 'application/pdf'
+        }
+      }, (err) => {
+        if (err) {
+          res.status(500).send('文件下载出错');
+        }
+      });
+
+      // 返回文件流
+
     })
     .catch((error) => {
       res.status(500).send('无法读取目录');

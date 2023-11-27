@@ -38,16 +38,17 @@
     <div class="card">
       <input v-model="fileId" type="text" placeholder="填入文件 uuid" class="card-input">
       <button @click="handleDownloadWithWindowOpen">window.open 下载</button>
-      <button @click="handleDownloadWithAxiosCommon">axios 下载 - 通用</button>
-      <button @click="handleDownloadWithAxiosGet">axios下载+get请求 - 简易</button>
-      <button @click="handleDownloadWithAxiosPost">axios下载+post请求 - 简易</button>
+      <button @click="handleDownloadWithAxiosCommon">axios 下载 - get - 常用</button>
+      <button @click="handleDownloadWithAxiosGet">axios下载 - get - 简易</button>
+      <button @click="handleDownloadWithAxiosPostCommon">axios下载 - post - 常用</button>
+      <button @click="handleDownloadWithAxiosPost">axios下载 - post - 简易</button>
     </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
-import { downloadFile } from '@/utils'
+import { downloadFile, downloadFileWithPost } from '@/utils'
 
 export default {
   name: 'HelloWorld',
@@ -98,6 +99,15 @@ export default {
       window.open(`http://${location.host}/download/${this.fileId}`)
       // window.open(`http://127.0.0.1:3000/download/${this.fileId}`)
     },
+    handleDownloadWithAxiosPostCommon() {
+      downloadFileWithPost(
+        `/api/download/post/${this.fileId}`, // 接口url
+        this.file.name, // 文件名
+        {
+          timeout: 1000 * 60 * 10 // 10s超时
+        }
+      )
+    },
     handleDownloadWithAxiosCommon() {
       downloadFile(
         `/api/download/${this.fileId}`, // 接口url
@@ -147,31 +157,24 @@ export default {
     handleDownloadWithAxiosPost() {
       // 注意 post请求 有3个参数 第3个才是config axios.post(url[, data[, config]])
       axios
-        .post(`/api/download/${this.fileId}`,
+        .post(`/api/download/post/${this.fileId}`,
           {},
           {
             responseType: 'blob',
           }
         )
         .then(res => {
-          const blob = new Blob([res.data])
+          const blob = new Blob([res.data], {
+            type: "application/octet-stream"
+          })
           const link = document.createElement('a')
+          link.target = '_blank'
           link.href = URL.createObjectURL(blob);
           link.download = this.file.name
+          document.body.appendChild(link)
           link.click()
           URL.revokeObjectURL(link.href)
-          // 或者是这种写法 更完整
-          // const blob = new Blob([res.data], {
-          //   type: "application/octet-stream"
-          // })
-          // const link = document.createElement('a')
-          // linl.target = '_blank'
-          // link.href = URL.createObjectURL(blob);
-          // link.download = this.file.name
-          // document.body.appendChild(link)
-          // link.click()
-          // URL.revokeObjectURL(link.href)
-          // document.body.removeChild(link)
+          document.body.removeChild(link)
         })
     },
     handleDownloadWithAxiosGetNote() {
