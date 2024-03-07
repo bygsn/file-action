@@ -79,7 +79,7 @@ export default {
           },
           {
             headers: {
-              'Content-Type':'multipart/form-data'
+              'Content-Type': 'multipart/form-data'
             },
           }
         )
@@ -110,7 +110,16 @@ export default {
     },
     handleDownloadWithAxiosCommon() {
       downloadFile(
-        `/api/download/${this.fileId}`, // 接口url
+        `/api/download/${this.fileId}`, // 接口url 只有一个参数的情况
+        this.file.name, // 文件名
+        {
+          timeout: 1000 * 60 * 10 // 10s超时
+        }
+      )
+      downloadFile(
+        // Export?type=0&projectId=268
+        `/api/download1/`, // 接口url get请求 params传参 有大于一个参数的情况 比如2个
+        // params传参是这种形式 Export?type=0&projectId=268 直接拼 用模板字符串
         this.file.name, // 文件名
         {
           timeout: 1000 * 60 * 10 // 10s超时
@@ -184,12 +193,12 @@ export default {
        2）自定义文件名 或者读取请求返回的头部信息里的content-disposition，返回的文件名就在这里面
        3）使用URL.createObjectURL将请求的blob数据转为可下载的url地址
        4）使用a标签下载
-     */
+       */
       axios
         .get(`/api/download/${this.fileId}`,
-        {
-          responseType: 'blob',// 必须要有这个属性 不然下载文件成功 打开也是乱码的
-        }
+          {
+            responseType: 'blob',// 必须要有这个属性 不然下载文件成功 打开也是乱码的
+          }
         )
         .then(res => {
           const blob = new Blob([res.data])
@@ -206,6 +215,355 @@ export default {
           // const blob = new Blob([res.data], { type })
         })
     },
+    // 其他下载内容
+  //   // 下载一 模板下载
+  //   templateDownLoad() {
+  //     let url = "/target-api/api/fileSource/template";
+  //     const params = new FormData();
+  //     if (this.formData.type == "TEXTFILE") {
+  //       params.append("type", "txt");
+  //     } else if (this.formData.type == "EXCELFILE") {
+  //       params.append("type", "excel");
+  //     } else {
+  //       params.append("type", "csv");
+  //     }
+  //     this.$http
+  //       .post(url, params, {responseType: "blob"})
+  //       .then((response) => {
+  //         const headers = response.headers["content-disposition"];
+  //         const index = headers.lastIndexOf("=");
+  //         const fileName = decodeURIComponent(
+  //           headers.substring(index + 2, headers.length - 1)
+  //         );
+  //         const link = document.createElement("a");
+  //         link.target = "_blank";
+  //         link.href = window.URL.createObjectURL(response.data);
+  //         link.download = fileName; // 自定义文件名
+  //         document.body.appendChild(link);
+  //         link.click();
+  //         window.URL.revokeObjectURL(link.href);
+  //         document.body.removeChild(link);
+  //       });
+  //   },
+  //   // 下载二
+  //   This.$http.post(url, param, httpConfig).then(response => {
+  //       This.$Notice.success({
+  //         title: '操作成功'
+  //       })
+  //       This.modalVisible = false
+  //       if (response.data) {
+  //         if (response.data.size > 0) {
+  //           const content = response.data
+  //           const blob = new Blob([content])// 构造一个blob对象来处理数据
+  //           const fileName = response.headers['content-disposition'].split('=')[1]
+  //           // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+  //           // IE10以上支持blob但是依然不支持download
+  //           if ('download' in document.createElement('a')) { // 支持a标签download的浏览器
+  //             const link = document.createElement('a')// 创建a标签
+  //             link.download = fileName// a标签添加属性
+  //             link.style.display = 'none'
+  //             link.href = window.URL.createObjectURL(blob)
+  //             document.body.appendChild(link)
+  //             link.click()// 执行下载
+  //             window.URL.revokeObjectURL(link.href) // 释放url
+  //             document.body.removeChild(link)// 释放标签
+  //           } else { // 其他浏览器
+  //             navigator.msSaveBlob(blob, fileName)
+  //           }
+  //         }
+  //       }
+  //     }
+  //   )
+  //     .catch(function (error) {
+  //       This.$Notice.error({
+  //         title: '操作失败'
+  //       })
+  //       console.log(error)
+  //     }),
+  //   //下载三
+  //   download(row) {
+  //     const msg = this.$Message.loading({
+  //       content: "下载中...",
+  //       duration: 0
+  //     });
+  //     this.$http
+  //       .get(
+  //         "/api/fjxz/single?filePath=" + encodeURIComponent(row.attachment),
+  //         {
+  //           responseType: "blob"
+  //         }
+  //       )
+  //       .then(res => {
+  //         // 处理下载失败返回json的情况
+  //         if (res.headers["content-type"] === "application/json") {
+  //           let reader = new FileReader();
+  //           // 将返回数据转为json
+  //           reader.onload = e => {
+  //             let tempRes = JSON.parse(e.target.result);
+  //             // 下载失败返回json的处理逻辑
+  //             this.$Message.error(tempRes.message || "下载失败");
+  //           };
+  //           reader.readAsText(res.data);
+  //         } else {
+  //           if (res.data && res.data.size >= 0) {
+  //             const content = res.data;
+  //             const blob = new Blob([content]);
+  //             const fileName = decodeURIComponent(
+  //               res.headers["content-disposition"].split("=")[1]
+  //             );
+  //             if ("download" in document.createElement("a")) {
+  //               const link = document.createElement("a");
+  //               link.download = fileName;
+  //               link.style.display = "none";
+  //               link.href = window.URL.createObjectURL(blob);
+  //               document.body.appendChild(link);
+  //               link.click();
+  //               window.URL.revokeObjectURL(link.href);
+  //               document.body.removeChild(link);
+  //             } else {
+  //               navigator.msSaveBlob(blob, fileName);
+  //             }
+  //           }
+  //         }
+  //       })
+  //       .catch(err => {
+  //         console.log(err);
+  //       })
+  //       .finally(() => {
+  //         msg();
+  //       });
+  //   },
+  //   // 下载四
+  //   // 导出
+  //   exportFunc() {
+  //     const params = Object.assign({}, this.filterData);
+  //     params.isProblemOrderInput = params.isProblemOrderInput || "";
+  //     this.exportLoading = true;
+  //     this.$http
+  //       .post("/api/sendOrderHandle/riskListHandleDownload", params, {
+  //         responseType: "blob"
+  //       })
+  //       .then(res => {
+  //         if (res.status === 200) {
+  //           // 获取文件名
+  //           const headers = res.headers["content-disposition"];
+  //           const index = headers.lastIndexOf("=");
+  //           const fileName = headers.substring(index + 1);
+  //           if (this.isIE()) {
+  //             window.navigator.msSaveOrOpenBlob(res.data, fileName);
+  //           } else {
+  //             // 创建URL
+  //             const objectUrl = URL.createObjectURL(res.data);
+  //             // 利用a标签自定义下载文件名
+  //             const link = document.createElement("a");
+  //             link.href = objectUrl;
+  //             link.download = fileName; // 自定义文件名
+  //             document.body.appendChild(link); // 针对老版火狐
+  //             link.click(); // 下载文件
+  //             URL.revokeObjectURL(objectUrl); // 释放内存
+  //             document.body.removeChild(link); // 针对老版火狐
+  //           }
+  //         } else {
+  //           this.$Message.error("导出接口请求失败");
+  //         }
+  //         this.exportLoading = false;
+  //       })
+  //       .catch(() => {
+  //         this.exportLoading = false;
+  //       });
+  //   },
+  //   // 判断是否是IE浏览器
+  //   isIE() {
+  //     if (!!window.ActiveXObject || "ActiveXObject" in window) {
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   },
+  //   // 下载五
+  //   genWeb () {
+  //     let This = this
+  //     const [url, param, httpConfig] = [
+  //       '/api/genWeb',
+  //       Qs.stringify({
+  //         formId: This.generate.id,
+  //         path: This.generate.webPath
+  //       }),
+  //       {
+  //         responseType: 'blob',
+  //         headers: {
+  //           'Content-Type': 'application/x-www-form-urlencoded'
+  //         }
+  //       }
+  //     ]
+  //     This.$http.post(url, param, httpConfig).then(response => {
+  //         This.$Notice.success({
+  //           title: '操作成功'
+  //         })
+  //         This.modalVisible = false
+  //         if (response.data) {
+  //           if (response.data.size > 0) {
+  //             const content = response.data
+  //             const blob = new Blob([content])// 构造一个blob对象来处理数据
+  //             const fileName = response.headers['content-disposition'].split('=')[1]
+  //             // 对于<a>标签，只有 Firefox 和 Chrome（内核） 支持 download 属性
+  //             // IE10以上支持blob但是依然不支持download
+  //             if ('download' in document.createElement('a')) { // 支持a标签download的浏览器
+  //               const link = document.createElement('a')// 创建a标签
+  //               link.download = fileName// a标签添加属性
+  //               link.style.display = 'none'
+  //               link.href = window.URL.createObjectURL(blob)
+  //               document.body.appendChild(link)
+  //               link.click()// 执行下载
+  //               window.URL.revokeObjectURL(link.href) // 释放url
+  //               document.body.removeChild(link)// 释放标签
+  //             } else { // 其他浏览器
+  //               navigator.msSaveBlob(blob, fileName)
+  //             }
+  //           }
+  //         }
+  //       }
+  //     )
+  //       .catch(function (error) {
+  //         This.$Notice.error({
+  //           title: '操作失败'
+  //         })
+  //         console.log(error)
+  //       })
+  //   },
+  //   // 下载六
+  // //   import { saveAs } from 'file-saver'
+  //   //下载七
+  //   downloadFunc2 () {
+  //     // 处理下载失败返回json的情况
+  //     if (this.resultHead['content-type'] === 'application/json') {
+  //       let reader = new FileReader()
+  //       // 将返回数据转为json
+  //       reader.onload = e => {
+  //         let tempRes = JSON.parse(e.target.result)
+  //         // 下载失败返回json的处理逻辑
+  //         this.$Message.error(tempRes.message || '下载失败')
+  //       }
+  //       reader.readAsText(this.keyResult)
+  //     } else {
+  //       if (this.keyResult && this.keyResult.size >= 0) {
+  //         const content = this.keyResult
+  //         const blob = new Blob([content])
+  //         const fileName = decodeURIComponent(
+  //           this.resultHead['content-disposition'].split('=')[1]
+  //         )
+  //         if ('download' in document.createElement('a')) {
+  //           const link = document.createElement('a')
+  //           link.download = fileName
+  //           link.style.display = 'none'
+  //           link.href = window.URL.createObjectURL(blob)
+  //           document.body.appendChild(link)
+  //           link.click()
+  //           window.URL.revokeObjectURL(link.href)
+  //           document.body.removeChild(link)
+  //         } else {
+  //           navigator.msSaveBlob(blob, fileName)
+  //         }
+  //       }
+  //     }
+  //   },
+  //   // 下载八
+  //   // 导出
+  //   exportFunc() {
+  //     const params = Object.assign({}, this.filterData);
+  //     params.isProblemOrderInput = params.isProblemOrderInput || "";
+  //     this.exportLoading = true;
+  //     this.$http
+  //       .post("/api/sendOrderHandle/riskListHandleDownload", params, {
+  //         responseType: "blob"
+  //       })
+  //       .then(res => {
+  //         if (res.status === 200) {
+  //           // 获取文件名
+  //           const headers = res.headers["content-disposition"];
+  //           const index = headers.lastIndexOf("=");
+  //           const fileName = headers.substring(index + 1);
+  //           if (this.isIE()) {
+  //             window.navigator.msSaveOrOpenBlob(res.data, fileName);
+  //           } else {
+  //             // 创建URL
+  //             const objectUrl = URL.createObjectURL(res.data);
+  //             // 利用a标签自定义下载文件名
+  //             const link = document.createElement("a");
+  //             link.href = objectUrl;
+  //             link.download = fileName; // 自定义文件名
+  //             document.body.appendChild(link); // 针对老版火狐
+  //             link.click(); // 下载文件
+  //             URL.revokeObjectURL(objectUrl); // 释放内存
+  //             document.body.removeChild(link); // 针对老版火狐
+  //           }
+  //         } else {
+  //           this.$Message.error("导出接口请求失败");
+  //         }
+  //         this.exportLoading = false;
+  //       })
+  //       .catch(() => {
+  //         this.exportLoading = false;
+  //       });
+  //   },
+  //   // 下载九
+  //   exportAllTable() {
+  //     let data = {
+  //       custId: this.node.usccCode,
+  //       clndrDtId: Number(
+  //         this.yearCount.toString() +
+  //         this.monthCount.toString().padStart(2, "0") +
+  //         " "
+  //       ),
+  //     }
+  //     exprotExcel(data).then((res) => {
+  //       if (res.status === 200) {
+  //         this.$Message.success("正在导出！");
+  //         let blob = new Blob([res.data]);
+  //         // 从响应头中获取文件名称
+  //         let fileNameResponse;
+  //         //后续若有后端返回表名名称res.headers["content-disposition"]从这里获取
+  //         const contentDisposition = res.headers["content-disposition"];
+  //         if (contentDisposition) {
+  //           // 正则获取filename的值
+  //           const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+  //           const matches = filenameRegex.exec(contentDisposition);
+  //           if (matches != null && matches[1]) {
+  //             fileNameResponse = matches[1].replace(/['"]/g, "");
+  //             fileNameResponse = decodeURI(fileNameResponse);
+  //           }
+  //           fileName = fileNameResponse;
+  //         } else {
+  //           if (fileName) {
+  //             fileName = `${fileName}.xlsx`;
+  //           } else {
+  //             fileName = `${+new Date()}.xlsx`;
+  //           }
+  //         }
+  //         if ("download" in document.createElement("a")) {
+  //           // 非IE下载
+  //           const elink = document.createElement("a");
+  //           elink.download = fileName;
+  //           elink.style.display = "none";
+  //           elink.href = URL.createObjectURL(blob);
+  //           document.body.appendChild(elink);
+  //           elink.click();
+  //           URL.revokeObjectURL(elink.href); // 释放URL 对象
+  //           document.body.removeChild(elink);
+  //         } else {
+  //           // IE10+下载
+  //           window.navigator.msSaveBlob(blob, fileName);
+  //         }
+  //       } else {
+  //         this.$Message.error("下载失败,请联系管理员");
+  //       }
+  //     }).catch(() => {
+  //       this.$Message.error("导出失败!")
+  //     })
+  //   },
+  //   // 下载十
+  //
+
   }
 }
 </script>
